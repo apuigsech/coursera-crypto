@@ -27,9 +27,11 @@ import itertools
 import operator
 from cryptohelper import *
 
+
 charset = ''
 charset += 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 charset += ' '
+
 
 def combine_charset(charset):
 	comb = {}
@@ -38,7 +40,8 @@ def combine_charset(charset):
 		comb.setdefault(ord(ch1)^ord(ch2), set()).add(ch2)
 	return comb
 
-def keystrem_from_many_time_pad(ct_list, charset):
+
+def keystream_from_many_time_pad(ct_list, charset):
 	ks = [{} for i in range(len(sorted(ct_list, key=len, reverse=True)[0]))]
 
 	comb = combine_charset(charset)
@@ -54,7 +57,6 @@ def keystrem_from_many_time_pad(ct_list, charset):
 					ks[i].setdefault(mix_2, 0)
 					ks[i][mix_1] += 1
 					ks[i][mix_2] += 1
-
 	ks_str = ''
 	for k in ks:
 		if (len(k) > 0):
@@ -69,7 +71,7 @@ def main(argv):
 	with open('ct.txt') as f:
 		ct_samples = [line.rstrip().decode('hex') for line in f]
 
-	ks = keystrem_from_many_time_pad(ct_samples, charset)
+	ks = keystream_from_many_time_pad(ct_samples, charset)
 
 	print strxor(ct_samples[-1], ks)
        
