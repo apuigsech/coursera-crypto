@@ -27,11 +27,8 @@ import itertools
 import operator
 from cryptohelper import *
 
-
-charset = ''
-charset += 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-charset += ' '
-
+freq_eng = dict(freq_eng, **{' ':15, ':':2, ';':2}) 
+charset = ''.join(freq_eng.keys())
 
 def combine_charset(charset):
 	comb = {}
@@ -55,8 +52,12 @@ def keystream_from_many_time_pad(ct_list, charset):
 					mix_2 = chr(ord(ct2[i])^ord(ch))
 					ks[i].setdefault(mix_1, 0)
 					ks[i].setdefault(mix_2, 0)
-					ks[i][mix_1] += 1
-					ks[i][mix_2] += 1
+					ks[i][mix_1] += freq_eng[ch]
+					ks[i][mix_2] += freq_eng[ch]
+
+	# Part of the key can't be solved statistically. So it's hand edited.
+	ks[25]['\x7f'] = 1000
+
 	ks_str = ''
 	for k in ks:
 		if (len(k) > 0):
@@ -72,7 +73,6 @@ def main(argv):
 		ct_samples = [line.rstrip().decode('hex') for line in f]
 
 	ks = keystream_from_many_time_pad(ct_samples, charset)
-
 	print strxor(ct_samples[-1], ks)
        
 
